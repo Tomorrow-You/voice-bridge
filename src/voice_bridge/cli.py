@@ -112,9 +112,9 @@ def main():
         available = get_available_engines()
         print("Available TTS engines:\n")
         engine_info = {
-            "edge-tts": ("Free, 400+ voices, cross-platform", "pip install voice-bridge[edge]"),
-            "elevenlabs": ("Cloud, highest quality, paid", "pip install voice-bridge[elevenlabs]"),
-            "kokoro": ("Local, free, offline (82M ONNX model)", "pip install voice-bridge[kokoro]"),
+            "edge-tts": ("Free, 400+ voices, cross-platform", "pip install ai-voice-bridge[edge]"),
+            "elevenlabs": ("Cloud, highest quality, paid", "pip install ai-voice-bridge[elevenlabs]"),
+            "kokoro": ("Local, free, offline (82M ONNX model)", "pip install ai-voice-bridge[kokoro]"),
             "say": ("macOS built-in, zero deps", "Built-in on macOS"),
             "espeak": ("Linux built-in, zero deps", "apt install espeak-ng"),
         }

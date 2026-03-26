@@ -1,6 +1,6 @@
 """Kokoro engine -- local TTS via 82M-parameter ONNX model, free and offline.
 
-Requires: pip install voice-bridge[kokoro]
+Requires: pip install ai-voice-bridge[kokoro]
 Models: Download from https://github.com/thewh1teagle/kokoro-onnx/releases/tag/model-files-v1.0
 """
 import logging

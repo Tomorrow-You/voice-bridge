@@ -1,5 +1,5 @@
 [project]
-name = "voice-bridge"
+name = "ai-voice-bridge"
 version = "0.1.0"
 description = "Multi-engine TTS for AI coding assistants — speak responses aloud"
 readme = "README.md"
@@ -33,7 +33,7 @@ Issues = "https://github.com/Tomorrow-You/voice-bridge/issues"
 edge = ["edge-tts>=6.1.0"]
 elevenlabs = ["elevenlabs>=2.39.0", "sounddevice>=0.5.0", "numpy>=1.26.0"]
 kokoro = ["kokoro-onnx>=0.4.0", "sounddevice>=0.5.0", "numpy>=1.26.0"]
-all = ["voice-bridge[edge,elevenlabs,kokoro]"]
+all = ["ai-voice-bridge[edge,elevenlabs,kokoro]"]
 dev = ["pytest>=8.0.0", "pytest-asyncio>=0.24.0"]
 
 [project.scripts]

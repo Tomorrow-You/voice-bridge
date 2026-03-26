@@ -37,9 +37,9 @@ def run_setup():
     if not_installed:
         print("Not installed (optional):")
         install_cmds = {
-            "edge-tts": "pip install voice-bridge[edge]",
-            "elevenlabs": "pip install voice-bridge[elevenlabs]",
-            "kokoro": "pip install voice-bridge[kokoro]",
+            "edge-tts": "pip install ai-voice-bridge[edge]",
+            "elevenlabs": "pip install ai-voice-bridge[elevenlabs]",
+            "kokoro": "pip install ai-voice-bridge[kokoro]",
             "say": "Only available on macOS",
             "espeak": "apt install espeak-ng (Linux) or brew install espeak (macOS)",
         }
@@ -52,10 +52,10 @@ def run_setup():
         print("No TTS engine available!")
         print()
         print("Recommended: Install edge-tts (free, 400+ voices, no API key):")
-        print("  pip install voice-bridge[edge]")
+        print("  pip install ai-voice-bridge[edge]")
         print()
         print("Or install all engines:")
-        print("  pip install voice-bridge[all]")
+        print("  pip install ai-voice-bridge[all]")
         return
 
     # Pick default engine

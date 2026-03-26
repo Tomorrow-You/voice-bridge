@@ -14,14 +14,14 @@ def get_available_engines() -> dict[str, bool]:
     """Return dict of engine_name -> is_available."""
     available = {}
 
-    # edge-tts: needs pip install voice-bridge[edge]
+    # edge-tts: needs pip install ai-voice-bridge[edge]
     try:
         import edge_tts  # noqa: F401
         available["edge-tts"] = True
     except ImportError:
         available["edge-tts"] = False
 
-    # elevenlabs: needs pip install voice-bridge[elevenlabs]
+    # elevenlabs: needs pip install ai-voice-bridge[elevenlabs]
     try:
         import elevenlabs  # noqa: F401
         import sounddevice  # noqa: F401
@@ -29,7 +29,7 @@ def get_available_engines() -> dict[str, bool]:
     except ImportError:
         available["elevenlabs"] = False
 
-    # kokoro: needs pip install voice-bridge[kokoro]
+    # kokoro: needs pip install ai-voice-bridge[kokoro]
     try:
         import kokoro_onnx  # noqa: F401
         import sounddevice  # noqa: F401
@@ -56,9 +56,9 @@ def resolve_engine_name(requested: str) -> str:
                 return name
         raise RuntimeError(
             "No TTS engine available. Install one with:\n"
-            "  pip install voice-bridge[edge]       # Free, cross-platform (recommended)\n"
-            "  pip install voice-bridge[elevenlabs]  # Cloud, paid, highest quality\n"
-            "  pip install voice-bridge[kokoro]      # Local, free, offline\n"
+            "  pip install ai-voice-bridge[edge]       # Free, cross-platform (recommended)\n"
+            "  pip install ai-voice-bridge[elevenlabs]  # Cloud, paid, highest quality\n"
+            "  pip install ai-voice-bridge[kokoro]      # Local, free, offline\n"
             "On macOS, the built-in 'say' command works without extras."
         )
 
@@ -67,9 +67,9 @@ def resolve_engine_name(requested: str) -> str:
 
     if not available[requested]:
         install_hints = {
-            "edge-tts": "pip install voice-bridge[edge]",
-            "elevenlabs": "pip install voice-bridge[elevenlabs]",
-            "kokoro": "pip install voice-bridge[kokoro]",
+            "edge-tts": "pip install ai-voice-bridge[edge]",
+            "elevenlabs": "pip install ai-voice-bridge[elevenlabs]",
+            "kokoro": "pip install ai-voice-bridge[kokoro]",
             "say": "Only available on macOS",
             "espeak": "Install espeak-ng: apt install espeak-ng (Linux) or brew install espeak (macOS)",
         }

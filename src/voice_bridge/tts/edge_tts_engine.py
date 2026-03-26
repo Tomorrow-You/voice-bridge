@@ -1,6 +1,6 @@
 """edge-tts engine -- free Microsoft Neural TTS, 400+ voices, no API key.
 
-Requires: pip install voice-bridge[edge]
+Requires: pip install ai-voice-bridge[edge]
 """
 import asyncio
 import logging

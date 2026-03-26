@@ -3,7 +3,7 @@
 **Give your AI coding assistant a voice.** Multi-engine TTS that works with Claude Code, Cursor, and VS Code. Free, local-first, works in 60 seconds.
 
 ```bash
-pip install voice-bridge[edge]
+pip install ai-voice-bridge[edge]
 voice-bridge test
 ```
 
@@ -25,13 +25,13 @@ AI coding assistants generate walls of text. Voice Bridge speaks the important p
 
 ```bash
 # Recommended: edge-tts (free, 400+ voices)
-pip install voice-bridge[edge]
+pip install ai-voice-bridge[edge]
 
 # Or with all engines
-pip install voice-bridge[all]
+pip install ai-voice-bridge[all]
 
 # Or minimal (macOS say / Linux espeak only)
-pip install voice-bridge
+pip install ai-voice-bridge
 ```
 
 ### Test
@@ -108,9 +108,9 @@ Now every Claude response is spoken automatically. Toggle off with `voice-bridge
 
 | Engine | Cost | Quality | Setup | Platform |
 |--------|------|---------|-------|----------|
-| **edge-tts** | Free | High (neural) | `pip install voice-bridge[edge]` | All |
-| **ElevenLabs** | Paid | Highest | `pip install voice-bridge[elevenlabs]` + API key | All |
-| **Kokoro** | Free | Good | `pip install voice-bridge[kokoro]` + model download | All |
+| **edge-tts** | Free | High (neural) | `pip install ai-voice-bridge[edge]` | All |
+| **ElevenLabs** | Paid | Highest | `pip install ai-voice-bridge[elevenlabs]` + API key | All |
+| **Kokoro** | Free | Good | `pip install ai-voice-bridge[kokoro]` + model download | All |
 | **say** | Free | Basic | Built-in | macOS |
 | **espeak** | Free | Basic | `apt install espeak-ng` | Linux |
 
@@ -128,7 +128,7 @@ voice-bridge engine auto         # Best available (default)
 ### ElevenLabs Setup
 
 ```bash
-pip install voice-bridge[elevenlabs]
+pip install ai-voice-bridge[elevenlabs]
 cp $(python3 -c "import voice_bridge.paths; print(voice_bridge.paths.get_data_dir())")/.env.example \
    $(python3 -c "import voice_bridge.paths; print(voice_bridge.paths.get_data_dir())")/.env
 # Edit .env with your API key from https://elevenlabs.io/app/settings/api-keys
@@ -139,7 +139,7 @@ voice-bridge test
 ### Kokoro Setup (Offline)
 
 ```bash
-pip install voice-bridge[kokoro]
+pip install ai-voice-bridge[kokoro]
 # Download model files (~200MB) from:
 # https://github.com/thewh1teagle/kokoro-onnx/releases/tag/model-files-v1.0
 # Place in: ~/.voice-bridge/models/ (or $VOICE_BRIDGE_HOME/models/)

@@ -1,6 +1,6 @@
 """ElevenLabs engine -- cloud TTS, highest quality, paid.
 
-Requires: pip install voice-bridge[elevenlabs]
+Requires: pip install ai-voice-bridge[elevenlabs]
 """
 import logging
 import re
