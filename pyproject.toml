@@ -44,6 +44,9 @@ dev = ["pytest>=8.0.0", "pytest-asyncio>=0.24.0"]
 voice-bridge = "voice_bridge.cli:main"
 vb-speak = "voice_bridge.speak:main"
 
+[tool.hatch.build.targets.wheel]
+packages = ["src/voice_bridge"]
+
 [build-system]
 requires = ["hatchling>=1.18.0"]
 build-backend = "hatchling.build"
