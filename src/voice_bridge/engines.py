@@ -21,11 +21,15 @@ def get_available_engines() -> dict[str, bool]:
     except ImportError:
         available["edge-tts"] = False
 
-    # elevenlabs: needs pip install ai-voice-bridge[elevenlabs]
+    # elevenlabs: needs pip install ai-voice-bridge[elevenlabs] + API key
     try:
         import elevenlabs  # noqa: F401
         import sounddevice  # noqa: F401
-        available["elevenlabs"] = True
+        import os
+        from voice_bridge.state import read_env_key
+        # Only mark available if API key is actually configured
+        key = os.getenv("ELEVENLABS_API_KEY", "") or read_env_key("ELEVENLABS_API_KEY", "")
+        available["elevenlabs"] = bool(key and key != "your-api-key-here")
     except ImportError:
         available["elevenlabs"] = False
 

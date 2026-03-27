@@ -12,7 +12,8 @@ import sounddevice as sd
 from elevenlabs import ElevenLabs
 from elevenlabs.types.voice_settings import VoiceSettings
 
-from voice_bridge.tts.base import TTSEngine
+from voice_bridge.tts.base import TTSEngine, TextSource
+from voice_bridge.tts.sentence_splitter import split_sentences
 from voice_bridge.config import TTSConfig
 
 logger = logging.getLogger(__name__)
@@ -22,6 +23,11 @@ class ElevenLabsTTS(TTSEngine):
     """Cloud TTS via ElevenLabs streaming API."""
 
     def __init__(self, config: TTSConfig):
+        if not config.elevenlabs_api_key:
+            raise ValueError(
+                "ElevenLabs API key not configured. Set ELEVENLABS_API_KEY in your .env file "
+                "or run 'voice-bridge setup'. Get a key at https://elevenlabs.io/app/settings/api-keys"
+            )
         self.model = config.elevenlabs_model
         self.voice_id = config.elevenlabs_voice_id
         self.speed = config.elevenlabs_speed
@@ -74,27 +80,14 @@ class ElevenLabsTTS(TTSEngine):
                 logger.error("ElevenLabs speak failed: %s", e)
                 raise
 
-    def speak_streaming(self, text_iterator: Iterator[str]) -> None:
-        """Stream text chunks to ElevenLabs, play audio as it arrives."""
+    def speak_streaming(self, text_source: TextSource) -> None:
+        """Stream text to ElevenLabs, play audio as it arrives."""
         self._stop_event.clear()
-        buffer = ""
-
-        for text_chunk in text_iterator:
-            if self._stop_event.is_set():
-                break
-            buffer += text_chunk
-
-            while any(sep in buffer for sep in [". ", "! ", "? ", ".\n", "!\n", "?\n"]):
-                for sep in [". ", "! ", "? ", ".\n", "!\n", "?\n"]:
-                    idx = buffer.find(sep)
-                    if idx != -1:
-                        sentence = buffer[:idx + len(sep)]
-                        buffer = buffer[idx + len(sep):]
-                        self._speak_sentence(sentence)
-                        break
-
-        if buffer.strip() and not self._stop_event.is_set():
-            self._speak_sentence(buffer)
+        split_sentences(
+            text_source,
+            speak_fn=self._speak_sentence,
+            stop_check=self._stop_event.is_set,
+        )
 
     def _speak_sentence(self, text: str) -> None:
         if not text.strip():

@@ -13,10 +13,20 @@ set -euo pipefail
 VB_HOME="${VOICE_BRIDGE_HOME:-$HOME/.voice-bridge}"
 LOG="$VB_HOME/voice-bridge.log"
 
-# Ensure log directory exists
+# Ensure data directory exists
 mkdir -p "$VB_HOME"
 
-# Source state file for mode
+# Rotate log if over 1MB (shell-side rotation to match Python RotatingFileHandler)
+if [ -f "$LOG" ]; then
+    LOG_SIZE=$(stat -f%z "$LOG" 2>/dev/null || stat -c%s "$LOG" 2>/dev/null || echo 0)
+    if [ "$LOG_SIZE" -gt 1000000 ] 2>/dev/null; then
+        [ -f "$LOG.2" ] && rm -f "$LOG.2"
+        [ -f "$LOG.1" ] && mv "$LOG.1" "$LOG.2"
+        mv "$LOG" "$LOG.1"
+    fi
+fi
+
+# Source state file for mode (values are quoted for shell safety)
 source "$VB_HOME/.state" 2>/dev/null || true
 MODE="${VOICE_BRIDGE_MODE:-off}"
 ENGINE="${VOICE_BRIDGE_ENGINE:-auto}"
@@ -67,8 +77,10 @@ fi
 echo "$(date -u +%Y-%m-%dT%H:%M:%SZ) [hook] mode=$MODE engine=$ENGINE text_len=${#TEXT}" >> "$LOG"
 
 # Speak in background so we don't block Claude Code
+# Fallback chain: configured engine -> espeak (Linux) -> say (macOS)
 (
     echo "$TEXT" | vb-speak --engine "$ENGINE" --stream 2>>"$LOG" || \
+    echo "$TEXT" | vb-speak --engine espeak --stream 2>>"$LOG" || \
     echo "$TEXT" | vb-speak --engine say --stream 2>>"$LOG" || true
 ) &
 

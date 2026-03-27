@@ -16,8 +16,11 @@ SECRET_PATTERNS = [
     r'[a-f0-9]{64}',                   # Hex secrets (64+ chars)
 ]
 
-# Absolute file paths
+# Absolute file paths (Unix)
 PATH_PATTERN = re.compile(r'/(?:Users|home|tmp|var|etc|opt|usr|Library|System)/\S+')
+
+# Windows file paths (C:\Users\..., D:\Program Files\...)
+WIN_PATH_PATTERN = re.compile(r'[A-Z]:\\(?:Users|Windows|Program Files|ProgramData|AppData)\S*', re.IGNORECASE)
 
 # URLs
 URL_PATTERN = re.compile(r'https?://\S+')
@@ -44,8 +47,9 @@ def filter_for_tts(text: str) -> str:
     # Strip URLs
     text = URL_PATTERN.sub('', text)
 
-    # Strip absolute file paths
+    # Strip absolute file paths (Unix and Windows)
     text = PATH_PATTERN.sub('', text)
+    text = WIN_PATH_PATTERN.sub('', text)
 
     # Strip markdown tables
     text = TABLE_DIVIDER.sub('', text)

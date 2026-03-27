@@ -124,3 +124,16 @@ def test_only_code_blocks():
     text = "```python\nprint('hello')\n```"
     result = filter_for_tts(text)
     assert result == ""
+
+
+def test_strips_windows_paths():
+    text = r"Found config at C:\Users\someone\AppData\Local\config.yaml to fix."
+    result = filter_for_tts(text)
+    assert r"C:\Users" not in result
+    assert "to fix" in result
+
+
+def test_strips_windows_program_files():
+    text = r"Installed at C:\Program Files\voice-bridge\bin."
+    result = filter_for_tts(text)
+    assert "Program Files" not in result

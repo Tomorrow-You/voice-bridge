@@ -2,19 +2,32 @@
 
 __version__ = "0.1.0"
 
-import logging
-from logging.handlers import RotatingFileHandler
+__all__ = ["__version__"]
 
-from voice_bridge.paths import get_data_dir
+# Logging is set up lazily on first engine use, not at import time.
+# This avoids creating directories or file handles just from `import voice_bridge`.
 
-_log_path = get_data_dir() / "voice-bridge.log"
-try:
-    _log_path.parent.mkdir(parents=True, exist_ok=True)
-    _handler = RotatingFileHandler(str(_log_path), maxBytes=1_000_000, backupCount=2)
-    _handler.setFormatter(logging.Formatter("%(asctime)s [%(name)s] %(levelname)s: %(message)s"))
-    _logger = logging.getLogger("voice_bridge")
-    _logger.addHandler(_handler)
-    _logger.setLevel(logging.INFO)
-except (OSError, PermissionError):
-    # Logging is non-critical -- don't crash if we can't write logs
-    pass
+_logging_initialized = False
+
+
+def _setup_logging():
+    """Initialize file logging on first use. Called by load_config()."""
+    global _logging_initialized
+    if _logging_initialized:
+        return
+    _logging_initialized = True
+
+    import logging
+    from logging.handlers import RotatingFileHandler
+    from voice_bridge.paths import get_data_dir
+
+    try:
+        log_path = get_data_dir() / "voice-bridge.log"
+        log_path.parent.mkdir(parents=True, exist_ok=True)
+        handler = RotatingFileHandler(str(log_path), maxBytes=1_000_000, backupCount=2)
+        handler.setFormatter(logging.Formatter("%(asctime)s [%(name)s] %(levelname)s: %(message)s"))
+        logger = logging.getLogger("voice_bridge")
+        logger.addHandler(handler)
+        logger.setLevel(logging.INFO)
+    except (OSError, PermissionError):
+        pass

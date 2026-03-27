@@ -10,7 +10,8 @@ from typing import Iterator
 import numpy as np
 import sounddevice as sd
 
-from voice_bridge.tts.base import TTSEngine
+from voice_bridge.tts.base import TTSEngine, TextSource
+from voice_bridge.tts.sentence_splitter import split_sentences
 from voice_bridge.paths import get_models_dir
 
 logger = logging.getLogger(__name__)
@@ -63,28 +64,15 @@ class KokoroTTS(TTSEngine):
             sd.play(samples, samplerate=sample_rate)
             sd.wait()
 
-    def speak_streaming(self, text_iterator: Iterator[str]) -> None:
-        """Accumulate text from iterator, speak sentences as they complete."""
+    def speak_streaming(self, text_source: TextSource) -> None:
+        """Accumulate text from source, speak sentences as they complete."""
         self._stop_event.clear()
         self._ensure_loaded()
-        buffer = ""
-
-        for text_chunk in text_iterator:
-            if self._stop_event.is_set():
-                break
-            buffer += text_chunk
-
-            while any(sep in buffer for sep in [". ", "! ", "? ", ".\n", "!\n", "?\n"]):
-                for sep in [". ", "! ", "? ", ".\n", "!\n", "?\n"]:
-                    idx = buffer.find(sep)
-                    if idx != -1:
-                        sentence = buffer[:idx + len(sep)]
-                        buffer = buffer[idx + len(sep):]
-                        self._speak_sentence(sentence)
-                        break
-
-        if buffer.strip() and not self._stop_event.is_set():
-            self._speak_sentence(buffer)
+        split_sentences(
+            text_source,
+            speak_fn=self._speak_sentence,
+            stop_check=self._stop_event.is_set,
+        )
 
     def _speak_sentence(self, text: str) -> None:
         if not text.strip() or self._stop_event.is_set():

@@ -129,9 +129,8 @@ voice-bridge engine auto         # Best available (default)
 
 ```bash
 pip install ai-voice-bridge[elevenlabs]
-cp $(python3 -c "import voice_bridge.paths; print(voice_bridge.paths.get_data_dir())")/.env.example \
-   $(python3 -c "import voice_bridge.paths; print(voice_bridge.paths.get_data_dir())")/.env
-# Edit .env with your API key from https://elevenlabs.io/app/settings/api-keys
+voice-bridge setup  # Prompts for your ElevenLabs API key
+# Or manually: create ~/.voice-bridge/.env with ELEVENLABS_API_KEY=your-key
 voice-bridge engine elevenlabs
 voice-bridge test
 ```

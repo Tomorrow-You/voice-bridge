@@ -38,7 +38,10 @@ all = [
     "elevenlabs>=2.39.0", "sounddevice>=0.5.0", "numpy>=1.26.0",
     "kokoro-onnx>=0.4.0",
 ]
-dev = ["pytest>=8.0.0", "pytest-asyncio>=0.24.0"]
+dev = ["pytest>=8.0.0"]
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
 
 [project.scripts]
 voice-bridge = "voice_bridge.cli:main"

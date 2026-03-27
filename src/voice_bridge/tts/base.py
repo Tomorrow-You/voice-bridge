@@ -1,7 +1,12 @@
 """Base interface for all TTS engines."""
 
 from abc import ABC, abstractmethod
-from typing import Iterator
+from typing import Iterator, Union
+import io
+
+
+# Type alias for text sources that can be streamed
+TextSource = Union[str, io.StringIO, Iterator[str]]
 
 
 class TTSEngine(ABC):
@@ -13,8 +18,12 @@ class TTSEngine(ABC):
         ...
 
     @abstractmethod
-    def speak_streaming(self, text_iterator: Iterator[str]) -> None:
-        """Speak from a streaming text source. Starts audio ASAP."""
+    def speak_streaming(self, text_source: TextSource) -> None:
+        """Speak from a streaming text source. Splits on sentence boundaries.
+
+        Accepts a string, StringIO, or any iterator yielding text chunks.
+        Text is buffered and spoken sentence-by-sentence as boundaries are detected.
+        """
         ...
 
     @abstractmethod

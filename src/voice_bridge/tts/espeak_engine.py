@@ -6,7 +6,8 @@ import shutil
 import subprocess
 from typing import Iterator
 
-from voice_bridge.tts.base import TTSEngine
+from voice_bridge.tts.base import TTSEngine, TextSource
+from voice_bridge.tts.sentence_splitter import split_sentences
 
 
 class EspeakTTS(TTSEngine):
@@ -28,27 +29,17 @@ class EspeakTTS(TTSEngine):
             )
 
     def speak(self, text: str) -> None:
+        # Use --stdin to avoid ARG_MAX limits with long text
         self._process = subprocess.Popen(
-            [self._cmd, "-v", self.voice, "-s", str(self.rate), text],
+            [self._cmd, "-v", self.voice, "-s", str(self.rate), "--stdin"],
+            stdin=subprocess.PIPE,
             stdout=subprocess.DEVNULL,
             stderr=subprocess.DEVNULL,
         )
-        self._process.wait()
+        self._process.communicate(input=text.encode("utf-8"))
 
-    def speak_streaming(self, text_iterator: Iterator[str]) -> None:
-        buffer = ""
-        for chunk in text_iterator:
-            buffer += chunk
-            while ". " in buffer or ".\n" in buffer:
-                for sep in [". ", ".\n"]:
-                    idx = buffer.find(sep)
-                    if idx != -1:
-                        sentence = buffer[:idx + 1]
-                        buffer = buffer[idx + len(sep):]
-                        self.speak(sentence)
-                        break
-        if buffer.strip():
-            self.speak(buffer)
+    def speak_streaming(self, text_source: TextSource) -> None:
+        split_sentences(text_source, speak_fn=self.speak)
 
     def stop(self) -> None:
         if self._process:
