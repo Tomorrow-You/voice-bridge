@@ -160,7 +160,23 @@ When engine is set to `auto` (default), Voice Bridge picks the first available i
 ```bash
 voice-bridge voices              # List voices for current engine
 voice-bridge voices edge-tts     # List voices for a specific engine
+
+# Filter by gender and/or locale
+voice-bridge voices edge-tts --gender Female --locale en-US
+
+# Preview a specific voice
+voice-bridge voices edge-tts --preview en-US-AriaNeural
+
+# Interactively audition voices (next/select/quit after each)
+voice-bridge voices edge-tts --gender Female --locale en-US --preview
+
+# Random sample of 3 voices
+voice-bridge voices edge-tts --sample 3 --preview
 ```
+
+Filtering options: `--gender` (Male/Female) works with edge-tts and kokoro. `--locale` (e.g. en-US, en-GB) works with edge-tts and say. `--sample N` picks N random voices. All combine with `--preview` for interactive audition.
+
+ElevenLabs preview uses free pre-recorded samples when available (no API credits consumed).
 
 ### Switching Engines
 
@@ -251,6 +267,12 @@ voice-bridge engine [name]   # Get/set engine
 voice-bridge voice [id]      # Set voice for current engine
 voice-bridge voices [engine] # List available voices
 voice-bridge speed [val]     # Set engine speed (see below)
+
+# Voice discovery
+voice-bridge voices edge-tts --gender Female --locale en-US  # Filter
+voice-bridge voices edge-tts --preview en-US-AriaNeural      # Preview one
+voice-bridge voices edge-tts --gender Female --preview       # Interactive
+voice-bridge voices edge-tts --sample 3 --preview            # Random sample
 
 # Pipe to speech
 echo "text" | vb-speak                    # Default engine
