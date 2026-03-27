@@ -1,7 +1,7 @@
 {
   "name": "voice-bridge",
   "description": "Give Claude Code a voice -- multi-engine TTS that speaks responses aloud. Free, local-first, 5 engines.",
-  "version": "0.1.0",
+  "version": "0.1.1",
   "author": {
     "name": "Tomorrow You LLC"
   },

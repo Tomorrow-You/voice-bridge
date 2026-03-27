@@ -1,5 +1,7 @@
 # Voice Bridge
 
+<!-- mcp-name: io.github.tomorrow-you/voice-bridge -->
+
 [![PyPI](https://img.shields.io/pypi/v/ai-voice-bridge)](https://pypi.org/project/ai-voice-bridge/)
 [![CI](https://github.com/Tomorrow-You/voice-bridge/actions/workflows/ci.yml/badge.svg)](https://github.com/Tomorrow-You/voice-bridge/actions)
 

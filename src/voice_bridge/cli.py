@@ -73,10 +73,22 @@ def main():
             except RuntimeError:
                 print("Auto-select: no engine available (run 'voice-bridge setup')")
 
+        if engine == "edge-tts" or (engine == "auto" and "edge-tts" in installed):
+            rate = state.get('VOICE_BRIDGE_EDGE_RATE', '+0%')
+            if rate != '+0%':
+                print(f"edge-tts rate: {rate}")
         if engine == "elevenlabs" or (engine == "auto" and "elevenlabs" in installed):
             print(f"ElevenLabs speed: {state.get('VOICE_BRIDGE_ELEVENLABS_SPEED', '1.0')}")
         if engine == "kokoro" or (engine == "auto" and "kokoro" in installed):
             print(f"Kokoro speed: {state.get('VOICE_BRIDGE_KOKORO_SPEED', '1.4')}")
+        if engine == "say" or (engine == "auto" and "say" in installed):
+            rate = state.get('VOICE_BRIDGE_SAY_RATE', '200')
+            if rate != '200':
+                print(f"say rate: {rate} words/min")
+        if engine == "espeak" or (engine == "auto" and "espeak" in installed):
+            rate = state.get('VOICE_BRIDGE_ESPEAK_RATE', '175')
+            if rate != '175':
+                print(f"espeak rate: {rate} words/min")
 
     elif args.command == "engines":
         from voice_bridge.engines import get_available_engines
@@ -186,31 +198,57 @@ def main():
             resolved = engine
 
         if args.value:
-            try:
-                speed = float(args.value)
-            except ValueError:
-                print(f"Invalid speed: {args.value} (must be a number)")
-                sys.exit(1)
-            if resolved == "elevenlabs":
-                if not (0.7 <= speed <= 1.2):
-                    print(f"ElevenLabs speed must be 0.7-1.2 (got {speed})")
+            if resolved == "edge-tts":
+                # edge-tts accepts a percentage string like "+30%" or "-10%"
+                import re
+                if not re.match(r'^[+-]?\d+%$', args.value):
+                    print(f"Invalid rate for edge-tts: {args.value} (use a percentage like +30% or -10%)")
                     sys.exit(1)
-                state["VOICE_BRIDGE_ELEVENLABS_SPEED"] = str(speed)
-            elif resolved == "kokoro":
-                if speed <= 0:
-                    print(f"Kokoro speed must be positive (got {speed})")
-                    sys.exit(1)
-                state["VOICE_BRIDGE_KOKORO_SPEED"] = str(speed)
+                state["VOICE_BRIDGE_EDGE_RATE"] = args.value
+                write_state(state)
+                print(f"Speed set to {args.value} for edge-tts")
             else:
-                print(f"Speed control not available for engine: {resolved}")
-                sys.exit(1)
-            write_state(state)
-            print(f"Speed set to {speed} for {resolved}")
+                try:
+                    speed = float(args.value)
+                except ValueError:
+                    print(f"Invalid speed: {args.value} (must be a number)")
+                    sys.exit(1)
+                if resolved == "elevenlabs":
+                    if not (0.7 <= speed <= 1.2):
+                        print(f"ElevenLabs speed must be 0.7-1.2 (got {speed})")
+                        sys.exit(1)
+                    state["VOICE_BRIDGE_ELEVENLABS_SPEED"] = str(speed)
+                elif resolved == "kokoro":
+                    if speed <= 0:
+                        print(f"Kokoro speed must be positive (got {speed})")
+                        sys.exit(1)
+                    state["VOICE_BRIDGE_KOKORO_SPEED"] = str(speed)
+                elif resolved in ("say", "espeak"):
+                    if speed != int(speed):
+                        print(f"{resolved} rate must be a whole number (words per minute), got {args.value}")
+                        sys.exit(1)
+                    wpm = int(speed)
+                    if wpm < 1:
+                        print(f"{resolved} rate must be positive (got {wpm})")
+                        sys.exit(1)
+                    state_key = "VOICE_BRIDGE_SAY_RATE" if resolved == "say" else "VOICE_BRIDGE_ESPEAK_RATE"
+                    state[state_key] = str(wpm)
+                else:
+                    print(f"Speed control not available for engine: {resolved}")
+                    sys.exit(1)
+                write_state(state)
+                print(f"Speed set to {int(speed) if resolved in ('say', 'espeak') else speed} for {resolved}")
         else:
-            if resolved == "elevenlabs":
+            if resolved == "edge-tts":
+                print(f"edge-tts rate: {state.get('VOICE_BRIDGE_EDGE_RATE', '+0%')} (e.g. +30%, -10%)")
+            elif resolved == "elevenlabs":
                 print(f"ElevenLabs speed: {state.get('VOICE_BRIDGE_ELEVENLABS_SPEED', '1.0')} (range: 0.7-1.2)")
             elif resolved == "kokoro":
                 print(f"Kokoro speed: {state.get('VOICE_BRIDGE_KOKORO_SPEED', '1.4')}")
+            elif resolved == "say":
+                print(f"say rate: {state.get('VOICE_BRIDGE_SAY_RATE', '200')} words/min")
+            elif resolved == "espeak":
+                print(f"espeak rate: {state.get('VOICE_BRIDGE_ESPEAK_RATE', '175')} words/min")
             else:
                 print(f"Speed control not available for engine: {resolved}")
 

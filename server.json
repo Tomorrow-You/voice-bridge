@@ -1,0 +1,44 @@
+{
+  "$schema": "https://static.modelcontextprotocol.io/schemas/2025-12-11/server.schema.json",
+  "name": "io.github.tomorrow-you/voice-bridge",
+  "title": "Voice Bridge",
+  "description": "Multi-engine TTS for AI coding assistants — speak responses aloud with 5 engines (edge-tts, ElevenLabs, Kokoro, macOS say, espeak-ng). Free by default.",
+  "repository": {
+    "url": "https://github.com/Tomorrow-You/voice-bridge",
+    "source": "github",
+    "id": "1193132463"
+  },
+  "version": "0.1.1",
+  "packages": [
+    {
+      "registryType": "npm",
+      "identifier": "ai-voice-bridge",
+      "version": "0.1.1",
+      "runtimeHint": "npx",
+      "transport": {
+        "type": "stdio"
+      }
+    },
+    {
+      "registryType": "pypi",
+      "identifier": "ai-voice-bridge",
+      "version": "0.1.1",
+      "runtimeHint": "python",
+      "transport": {
+        "type": "stdio"
+      },
+      "packageArguments": [
+        {
+          "type": "positional",
+          "value": "-m",
+          "description": "Run as module"
+        },
+        {
+          "type": "positional",
+          "value": "voice_bridge.mcp.server",
+          "description": "MCP server module"
+        }
+      ]
+    }
+  ]
+}

@@ -55,6 +55,14 @@ class TTSConfig(BaseModel):
         default_factory=lambda: read_state_value("VOICE_BRIDGE_EDGE_RATE", "+0%"),
         description="edge-tts rate adjustment (e.g. +20%, -10%)",
     )
+    say_rate: int = Field(
+        default_factory=lambda: int(read_state_value("VOICE_BRIDGE_SAY_RATE", "200")),
+        description="macOS say words-per-minute (default 200)",
+    )
+    espeak_rate: int = Field(
+        default_factory=lambda: int(read_state_value("VOICE_BRIDGE_ESPEAK_RATE", "175")),
+        description="espeak-ng words-per-minute (default 175)",
+    )
     sample_rate: int = 24000
     max_chars_per_request: int = 5000
 

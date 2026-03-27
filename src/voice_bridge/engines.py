@@ -105,10 +105,10 @@ def create_engine(name: str, config: Optional["TTSConfig"] = None) -> TTSEngine:
 
     if resolved == "say":
         from voice_bridge.tts.macos_say import MacOSSayTTS
-        return MacOSSayTTS()
+        return MacOSSayTTS(rate=config.say_rate)
 
     if resolved == "espeak":
         from voice_bridge.tts.espeak_engine import EspeakTTS
-        return EspeakTTS()
+        return EspeakTTS(rate=config.espeak_rate)
 
     raise ValueError(f"No engine implementation for: {resolved}")
