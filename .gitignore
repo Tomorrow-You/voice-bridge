@@ -40,3 +40,6 @@ htmlcov/
 
 # Internal planning docs
 TODO.md
+
+# Claude Code local settings
+.claude/settings.local.json
