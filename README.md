@@ -22,6 +22,19 @@ AI coding assistants generate walls of text. Voice Bridge speaks the important p
 - **Non-blocking** -- audio plays in the background, doesn't slow your workflow
 - **Claude Code native** -- Stop hook integration speaks responses automatically
 
+## Prerequisites
+
+Voice Bridge is a **Python package** that plays audio on your **local machine**. It requires:
+
+| Requirement | Details |
+|---|---|
+| **Python 3.10+** | `python3 --version` to check |
+| **pip** | Usually bundled with Python. On some Linux distros: `sudo apt install python3-pip` |
+| **Audio output** | Speakers or headphones — audio plays locally, not over a network |
+| **Audio player** (Linux/Windows) | **macOS**: built-in (`afplay`). **Linux**: install `mpv` or `ffmpeg`. **Windows**: install `ffmpeg` or `mpv` |
+
+> **Not supported**: headless servers, Docker containers, SSH sessions, and CI runners typically lack audio output. Voice Bridge will install and run the MCP server, but `speak` commands will fail silently without an audio player and sound hardware.
+
 ## Quick Start
 
 ### Install
@@ -198,6 +211,8 @@ echo "text" | vb-speak --dry-run          # Print filtered text only
 ## MCP Server
 
 Voice Bridge includes an MCP (Model Context Protocol) server so any MCP-compatible tool can speak text aloud.
+
+> **npm shim (`npx ai-voice-bridge`)**: The npm package is a thin wrapper that auto-installs the Python package. It requires Python 3.10+ and pip on your `PATH`. On startup it checks for audio players and warns if none are found. See [Prerequisites](#prerequisites) for full requirements.
 
 ### Setup with Claude Desktop
 
