@@ -12,7 +12,7 @@
   "bin": {
     "ai-voice-bridge": "bin/ai-voice-bridge-mcp.js"
   },
-  "files": ["bin/"],
+  "files": ["bin/", "README.md"],
   "engines": {
     "node": ">=16"
   }
