@@ -43,3 +43,6 @@ TODO.md
 
 # Claude Code local settings
 **/.claude/settings.local.json
+
+# MCP registry auth tokens
+.mcpregistry_*
