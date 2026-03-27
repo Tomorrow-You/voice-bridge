@@ -1,5 +1,8 @@
 # Voice Bridge
 
+[![PyPI](https://img.shields.io/pypi/v/ai-voice-bridge)](https://pypi.org/project/ai-voice-bridge/)
+[![CI](https://github.com/Tomorrow-You/voice-bridge/actions/workflows/ci.yml/badge.svg)](https://github.com/Tomorrow-You/voice-bridge/actions)
+
 **Give your AI coding assistant a voice.** Multi-engine TTS that works with Claude Code, Cursor, and VS Code. Free, local-first, works in 60 seconds.
 
 ```bash
@@ -190,6 +193,63 @@ echo "text" | vb-speak                    # Default engine
 echo "text" | vb-speak --engine edge-tts  # Specific engine
 echo "text" | vb-speak --stream           # Stream sentence-by-sentence
 echo "text" | vb-speak --dry-run          # Print filtered text only
+```
+
+## MCP Server
+
+Voice Bridge includes an MCP (Model Context Protocol) server so any MCP-compatible tool can speak text aloud.
+
+### Setup with Claude Desktop
+
+Add to your `claude_desktop_config.json`:
+
+```json
+{
+  "mcpServers": {
+    "voice-bridge": {
+      "command": "python3",
+      "args": ["-m", "voice_bridge.mcp.server"]
+    }
+  }
+}
+```
+
+Or after npm publish, use the npm shim:
+
+```json
+{
+  "mcpServers": {
+    "voice-bridge": {
+      "command": "npx",
+      "args": ["ai-voice-bridge"]
+    }
+  }
+}
+```
+
+### Setup with Cursor / VS Code
+
+Add the same MCP server config in your editor's MCP settings. The config format is the same as Claude Desktop.
+
+### Setup with Claude Code
+
+```bash
+claude mcp add voice-bridge -- python3 -m voice_bridge.mcp.server
+```
+
+### MCP Tools
+
+| Tool | Description |
+|------|-------------|
+| `speak` | Speak text aloud (auto-filters code/secrets/markdown) |
+| `set_engine` | Switch the default TTS engine |
+| `get_status` | Show current mode, engine, and available engines |
+| `list_voices` | List available voices for an engine |
+
+### Install with MCP support
+
+```bash
+pip install ai-voice-bridge[mcp]
 ```
 
 ## Development

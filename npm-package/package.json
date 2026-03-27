@@ -1,0 +1,19 @@
+{
+  "name": "ai-voice-bridge",
+  "version": "0.1.0",
+  "description": "MCP server for Voice Bridge — multi-engine TTS for AI coding assistants",
+  "author": "Tomorrow You LLC",
+  "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/Tomorrow-You/voice-bridge"
+  },
+  "keywords": ["mcp", "tts", "text-to-speech", "claude", "voice", "ai-assistant"],
+  "bin": {
+    "ai-voice-bridge": "bin/ai-voice-bridge-mcp.js"
+  },
+  "files": ["bin/"],
+  "engines": {
+    "node": ">=16"
+  }
+}

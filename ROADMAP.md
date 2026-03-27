@@ -7,7 +7,6 @@
 | **PyPI name** | `ai-voice-bridge` |
 | **npm name (future)** | `ai-voice-bridge` |
 | **GitHub** | https://github.com/Tomorrow-You/voice-bridge |
-| **Local clone** | `/Users/maxhome/TOMORROWME-REPOS/voice-bridge` |
 | **Python import** | `voice_bridge` |
 | **CLI commands** | `voice-bridge`, `vb-speak` |
 | **License** | MIT (edge-tts optional extra is GPL-3.0) |
@@ -47,13 +46,14 @@
 2. Create account under the Tomorrow You org email (or personal)
 3. Enable 2FA (required for new accounts)
 4. Go to https://pypi.org/manage/account/token/
-5. Create an API token scoped to the `ai-voice-bridge` project (or all projects for first upload)
+5. Create an API token scoped to **"Entire account"** (the `ai-voice-bridge` project doesn't exist on PyPI yet — it gets created automatically on first upload)
 6. Save the token -- it starts with `pypi-` and is shown only once
+7. After the first successful upload, create a new token scoped to `ai-voice-bridge` and revoke the broad one
 
 ### Step 2.2: Test Build Locally
 
 ```bash
-cd /Users/maxhome/TOMORROWME-REPOS/voice-bridge
+cd voice-bridge
 source .venv/bin/activate
 pip install build twine
 

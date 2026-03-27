@@ -33,12 +33,13 @@ Issues = "https://github.com/Tomorrow-You/voice-bridge/issues"
 edge = ["edge-tts>=6.1.0"]
 elevenlabs = ["elevenlabs>=2.39.0", "sounddevice>=0.5.0", "numpy>=1.26.0"]
 kokoro = ["kokoro-onnx>=0.4.0", "sounddevice>=0.5.0", "numpy>=1.26.0"]
+mcp = ["mcp>=1.0.0"]
 all = [
     "edge-tts>=6.1.0",
     "elevenlabs>=2.39.0", "sounddevice>=0.5.0", "numpy>=1.26.0",
     "kokoro-onnx>=0.4.0",
 ]
-dev = ["pytest>=8.0.0"]
+dev = ["pytest>=8.0.0", "pytest-asyncio>=0.23.0"]
 
 [tool.pytest.ini_options]
 testpaths = ["tests"]
@@ -46,6 +47,7 @@ testpaths = ["tests"]
 [project.scripts]
 voice-bridge = "voice_bridge.cli:main"
 vb-speak = "voice_bridge.speak:main"
+voice-bridge-mcp = "voice_bridge.mcp.server:main"
 
 [tool.hatch.build.targets.wheel]
 packages = ["src/voice_bridge"]

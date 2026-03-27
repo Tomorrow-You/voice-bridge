@@ -6,7 +6,7 @@ This document explains exactly what has been built, how it works, and what remai
 
 Voice Bridge is an open-source Python package that gives AI coding assistants (Claude Code, Cursor, VS Code) a voice. It speaks AI responses aloud using one of 5 TTS engines. The PyPI package name is `ai-voice-bridge`. The GitHub repo is `Tomorrow-You/voice-bridge`.
 
-**Current state:** v0.1.0 is feature-complete and code-reviewed. It is pushed to GitHub with passing CI. It is NOT yet published to PyPI or any plugin marketplace.
+**Current state:** v0.1.0 is published on [PyPI](https://pypi.org/project/ai-voice-bridge/) and pushed to GitHub with passing CI. Includes MCP server support. Not yet published to any plugin marketplace.
 
 ---
 
@@ -15,7 +15,6 @@ Voice Bridge is an open-source Python package that gives AI coding assistants (C
 ### Repository
 
 - **GitHub:** https://github.com/Tomorrow-You/voice-bridge
-- **Local clone:** `/Users/maxhome/TOMORROWME-REPOS/voice-bridge`
 - **6 commits** on `main`, CI green
 - **39 tracked files**, ~2,100 lines of code
 - **73 tests** (69 pass, 4 skip for optional deps)
@@ -64,7 +63,7 @@ ai-voice-bridge (PyPI name)
 
 ```bash
 # From the local clone:
-cd /Users/maxhome/TOMORROWME-REPOS/voice-bridge
+cd voice-bridge
 source .venv/bin/activate
 
 # CLI tools
@@ -86,10 +85,6 @@ echo "Hello" | vb-speak --dry-run  # Print filtered text, no audio
 # Tests
 pytest -v                  # 73 tests
 ```
-
-### Dave's Personal Setup
-
-Dave's original voice-bridge lives at `~/.voice-bridge/` (private, not open-source). His Claude Code `.claude/settings.json` still points to the old install. The open-source repo at `/Users/maxhome/TOMORROWME-REPOS/voice-bridge` is a clean copy. Dave can eventually switch his hook to use the pip-installed version, but there is no urgency.
 
 ---
 
