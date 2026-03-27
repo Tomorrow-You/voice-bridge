@@ -1,6 +1,8 @@
 {
-  "voice-bridge": {
-    "command": "python3",
-    "args": ["-m", "voice_bridge.mcp.server"]
+  "mcpServers": {
+    "voice-bridge": {
+      "command": "python3",
+      "args": ["-m", "voice_bridge.mcp.server"]
+    }
   }
 }
