@@ -13,15 +13,13 @@ voice-bridge test                   # Verify audio output
 voice-bridge on                     # Enable always-on mode (optional)
 ```
 
-## Why Voice Bridge?
-
-AI coding assistants generate walls of text. Voice Bridge speaks the important parts aloud so you can keep your eyes on the code.
+## Features
 
 - **Free by default** -- edge-tts uses Microsoft Neural voices, no API key needed
 - **5 engines** -- edge-tts, ElevenLabs, Kokoro (local ONNX), macOS say, espeak-ng
-- **Safe** -- strips code blocks, API keys, file paths, and markdown before speaking
-- **Non-blocking** -- audio plays in the background, doesn't slow your workflow
-- **Claude Code native** -- Stop hook integration speaks responses automatically
+- **Text safety filter** -- strips code blocks, secrets, file paths, URLs, and markdown before speaking
+- **Claude Code plugin** -- Stop hook speaks responses automatically, MCP server for tool-based control
+- **Voice discovery** -- browse, filter by gender/locale, and preview voices interactively
 
 ## Prerequisites
 
