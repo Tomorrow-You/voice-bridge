@@ -60,6 +60,8 @@ voice-bridge engines       # List available engines
 voice-bridge setup         # Interactive setup wizard
 ```
 
+The setup wizard walks you through: detecting installed engines, testing audio output, optionally entering an ElevenLabs API key (if the SDK is installed), writing default state, and showing Claude Code integration options.
+
 ### Use
 
 ```bash
