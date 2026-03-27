@@ -125,12 +125,17 @@ class EdgeTTSEngine(TTSEngine):
             logger.error("Audio player not found: %s", cmd[0])
 
     def speak_streaming(self, text_source: TextSource) -> None:
-        """Accumulate text from source, speak sentences as they complete."""
+        """Accumulate text from source, speak sentences as they complete.
+
+        Uses queued mode so the next sentence can be generated while the
+        current one plays, reducing gaps between sentences.
+        """
         self._stop_event.clear()
         split_sentences(
             text_source,
             speak_fn=self.speak,
             stop_check=self._stop_event.is_set,
+            queued=True,
         )
 
     def stop(self) -> None:

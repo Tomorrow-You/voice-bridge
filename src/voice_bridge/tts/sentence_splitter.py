@@ -10,22 +10,34 @@ SENTENCE_BOUNDARIES = [". ", "! ", "? ", ".\n", "!\n", "?\n"]
 
 
 def split_sentences(text_iterator: Iterator[str], speak_fn: Callable[[str], None],
-                    stop_check: Callable[[], bool] = lambda: False) -> None:
+                    stop_check: Callable[[], bool] = lambda: False,
+                    queued: bool = False) -> None:
     """Buffer text from an iterator and call speak_fn for each complete sentence.
 
     Args:
         text_iterator: Source of text chunks (lines, characters, or blocks).
         speak_fn: Called with each complete sentence to speak.
         stop_check: Returns True if playback should stop.
+        queued: If True, sentences are queued and played in a background thread,
+                allowing overlap between generation and playback.
     """
+    if queued:
+        from voice_bridge.tts.audio_queue import AudioQueue
+        aq = AudioQueue(speak_fn)
+        emit = aq.put
+        check = lambda: stop_check() or aq.is_cancelled
+    else:
+        emit = speak_fn
+        check = stop_check
+
     buffer = ""
 
     for text_chunk in text_iterator:
-        if stop_check():
+        if check():
             break
         buffer += text_chunk
 
-        while not stop_check():
+        while not check():
             best_idx = -1
             best_sep_len = 0
             for sep in SENTENCE_BOUNDARIES:
@@ -38,8 +50,14 @@ def split_sentences(text_iterator: Iterator[str], speak_fn: Callable[[str], None
             sentence = buffer[:best_idx + best_sep_len]
             buffer = buffer[best_idx + best_sep_len:]
             if sentence.strip():
-                speak_fn(sentence)
+                emit(sentence)
 
     # Flush remaining buffer
-    if buffer.strip() and not stop_check():
-        speak_fn(buffer)
+    if buffer.strip() and not check():
+        emit(buffer)
+
+    if queued:
+        if check():
+            aq.cancel()
+        else:
+            aq.drain()
