@@ -152,7 +152,7 @@ async def _handle_set_engine(arguments: dict) -> list[types.TextContent]:
 
 async def _handle_get_status() -> list[types.TextContent]:
     state = read_state()
-    mode = state.get("VOICE_BRIDGE_MODE", "single")
+    mode = state.get("VOICE_BRIDGE_MODE", "off")
     engine_setting = state.get("VOICE_BRIDGE_ENGINE", "auto")
 
     available = get_available_engines()
@@ -186,13 +186,13 @@ async def _handle_list_voices(arguments: dict) -> list[types.TextContent]:
     if resolved == "edge-tts":
         return await _list_edge_tts_voices()
     elif resolved == "elevenlabs":
-        return _list_elevenlabs_voices()
+        return await asyncio.to_thread(_list_elevenlabs_voices)
     elif resolved == "kokoro":
         return _list_kokoro_voices()
     elif resolved == "say":
-        return _list_say_voices()
+        return await asyncio.to_thread(_list_say_voices)
     elif resolved == "espeak":
-        return _list_espeak_voices()
+        return await asyncio.to_thread(_list_espeak_voices)
     else:
         return [types.TextContent(type="text", text=f"No voice listing for engine: {resolved}")]
 

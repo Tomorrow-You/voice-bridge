@@ -38,7 +38,9 @@ def _run_async(coro):
 
         t = threading.Thread(target=_thread_target)
         t.start()
-        t.join()
+        t.join(timeout=30)
+        if t.is_alive():
+            raise TimeoutError("edge-tts coroutine timed out after 30s")
         if exception:
             raise exception
         return result
