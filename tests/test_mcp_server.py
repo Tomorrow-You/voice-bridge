@@ -2,7 +2,16 @@
 
 import pytest
 
-pytestmark = pytest.mark.asyncio
+try:
+    import mcp  # noqa: F401
+    HAS_MCP = True
+except ImportError:
+    HAS_MCP = False
+
+pytestmark = [
+    pytest.mark.asyncio,
+    pytest.mark.skipif(not HAS_MCP, reason="mcp not installed"),
+]
 
 
 async def test_list_tools():
