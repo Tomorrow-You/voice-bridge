@@ -5,14 +5,13 @@
 [![PyPI](https://img.shields.io/pypi/v/ai-voice-bridge)](https://pypi.org/project/ai-voice-bridge/)
 [![CI](https://github.com/Tomorrow-You/voice-bridge/actions/workflows/ci.yml/badge.svg)](https://github.com/Tomorrow-You/voice-bridge/actions)
 
-**Give your AI coding assistant a voice.** Multi-engine TTS that works with Claude Code, Cursor, and VS Code. Free, local-first, works in 60 seconds.
+Multi-engine text-to-speech for AI coding assistants. Speaks responses aloud from Claude Code, Cursor, or VS Code via a Claude Code plugin, MCP server, or CLI pipe.
 
 ```bash
-pip install ai-voice-bridge[edge]
-voice-bridge test
+pip install ai-voice-bridge[edge]   # Install with free edge-tts engine
+voice-bridge test                   # Verify audio output
+voice-bridge on                     # Enable always-on mode (optional)
 ```
-
-That's it. Your terminal can talk now.
 
 ## Why Voice Bridge?
 
