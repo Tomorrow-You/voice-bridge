@@ -40,3 +40,14 @@ def test_vb_speak_stdin_dry_run():
     )
     assert result.returncode == 0
     assert "Hello from stdin" in result.stdout
+
+
+def test_voices_kokoro():
+    """Test that voices command lists kokoro voices even when not installed."""
+    result = subprocess.run(
+        [sys.executable, "-m", "voice_bridge.cli", "voices", "kokoro"],
+        capture_output=True, text=True,
+    )
+    assert result.returncode == 0
+    assert "Kokoro voices" in result.stdout
+    assert "bm_lewis" in result.stdout

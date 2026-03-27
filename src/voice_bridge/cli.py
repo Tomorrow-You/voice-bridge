@@ -11,6 +11,7 @@ Usage:
     voice-bridge speed [val]  # Set engine speed
     voice-bridge setup        # Interactive first-run setup
     voice-bridge engines      # List available engines
+    voice-bridge voices [engine]  # List available voices for an engine
 
 Modes:
     off      -- TTS only when user types "speak" keyword (single-turn)
@@ -30,7 +31,7 @@ def main():
     )
     parser.add_argument(
         "command",
-        choices=["on", "off", "status", "test", "voice", "engine", "engines", "speed", "setup"],
+        choices=["on", "off", "status", "test", "voice", "voices", "engine", "engines", "speed", "setup"],
         help="Command to run",
     )
     parser.add_argument("value", nargs="?", help="Value for voice/engine/speed commands")
@@ -213,9 +214,147 @@ def main():
             else:
                 print(f"Speed control not available for engine: {resolved}")
 
+    elif args.command == "voices":
+        _list_voices(args.value, state)
+
     elif args.command == "setup":
         from voice_bridge.setup_wizard import run_setup
         run_setup()
+
+
+def _list_voices(engine_arg: str | None, state: dict[str, str]):
+    """List available voices for an engine."""
+    from voice_bridge.engines import resolve_engine_name, get_available_engines
+
+    engine_name = engine_arg or state.get("VOICE_BRIDGE_ENGINE", "auto")
+
+    # For engines with fixed voice lists, show them even if the engine isn't installed
+    if engine_name in ("kokoro",):
+        resolved = engine_name
+    else:
+        try:
+            resolved = resolve_engine_name(engine_name)
+        except (RuntimeError, ValueError) as e:
+            print(f"Error: {e}", file=sys.stderr)
+            sys.exit(1)
+
+    if resolved == "edge-tts":
+        _list_edge_tts_voices()
+    elif resolved == "elevenlabs":
+        _list_elevenlabs_voices()
+    elif resolved == "kokoro":
+        _list_kokoro_voices()
+    elif resolved == "say":
+        _list_say_voices()
+    elif resolved == "espeak":
+        _list_espeak_voices()
+    else:
+        print(f"No voice listing for engine: {resolved}")
+
+
+def _list_edge_tts_voices():
+    """List edge-tts voices, English by default."""
+    try:
+        import asyncio
+        import edge_tts
+    except ImportError:
+        print("edge-tts not installed. Run: pip install ai-voice-bridge[edge]")
+        return
+
+    voices = asyncio.run(edge_tts.list_voices())
+    en_voices = [v for v in voices if v["Locale"].startswith("en-")]
+    en_voices.sort(key=lambda v: v["ShortName"])
+
+    print(f"edge-tts English voices ({len(en_voices)} of {len(voices)} total):\n")
+    for v in en_voices:
+        print(f"  {v['ShortName']:40s} {v['Gender']}")
+    print(f"\nSet with: voice-bridge voice <name>")
+
+
+def _list_elevenlabs_voices():
+    """List ElevenLabs voices via API."""
+    try:
+        from elevenlabs import ElevenLabs
+    except ImportError:
+        print("ElevenLabs not installed. Run: pip install ai-voice-bridge[elevenlabs]")
+        return
+
+    import os
+    from voice_bridge.state import read_env_key
+    api_key = os.getenv("ELEVENLABS_API_KEY", "") or read_env_key("ELEVENLABS_API_KEY", "")
+    if not api_key:
+        print("ElevenLabs API key not configured. Run: voice-bridge setup")
+        return
+
+    client = ElevenLabs(api_key=api_key)
+    response = client.voices.get_all()
+
+    print(f"ElevenLabs voices ({len(response.voices)}):\n")
+    for v in response.voices:
+        print(f"  {v.name:30s} ID: {v.voice_id}")
+    print(f"\nSet with: voice-bridge voice <voice_id>")
+
+
+def _list_kokoro_voices():
+    """List bundled Kokoro voice names."""
+    voices = [
+        ("af_bella", "American Female"),
+        ("af_nicole", "American Female"),
+        ("af_sarah", "American Female"),
+        ("af_sky", "American Female"),
+        ("am_adam", "American Male"),
+        ("am_michael", "American Male"),
+        ("bf_emma", "British Female"),
+        ("bf_isabella", "British Female"),
+        ("bm_george", "British Male"),
+        ("bm_lewis", "British Male"),
+    ]
+    print("Kokoro voices:\n")
+    for name, desc in voices:
+        print(f"  {name:20s} {desc}")
+    print(f"\nSet with: voice-bridge voice <name>")
+
+
+def _list_say_voices():
+    """List macOS say voices."""
+    import subprocess
+    try:
+        result = subprocess.run(
+            ["say", "-v", "?"], capture_output=True, text=True, timeout=5,
+        )
+    except Exception as e:
+        print(f"Error listing voices: {e}")
+        return
+
+    all_voices = result.stdout.strip().splitlines()
+    en_voices = [v for v in all_voices if "en_" in v or "en-" in v]
+
+    print(f"macOS say English voices ({len(en_voices)} of {len(all_voices)} total):\n")
+    for v in en_voices:
+        # Format: "Name  lang  # description"
+        name = v.split()[0]
+        rest = v[len(name):].strip()
+        print(f"  {name:20s} {rest}")
+    print(f"\nSet with: voice-bridge voice <name>")
+
+
+def _list_espeak_voices():
+    """List espeak-ng English voices."""
+    import subprocess
+    import shutil
+
+    cmd = "espeak-ng" if shutil.which("espeak-ng") else "espeak"
+    try:
+        result = subprocess.run(
+            [cmd, "--voices=en"], capture_output=True, text=True, timeout=5,
+        )
+    except Exception as e:
+        print(f"Error listing voices: {e}")
+        return
+
+    print("espeak English voices:\n")
+    for line in result.stdout.strip().splitlines():
+        print(f"  {line.strip()}")
 
 
 if __name__ == "__main__":
