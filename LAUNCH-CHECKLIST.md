@@ -32,7 +32,7 @@ You already created a project-scoped token. Confirm the old "Entire account" tok
 This lets users run `npx ai-voice-bridge` to start the MCP server.
 
 ```bash
-cd /Users/maxhome/TOMORROWME-REPOS/voice-bridge/npm-package
+cd npm-package
 npm login
 npm publish
 ```
@@ -51,7 +51,7 @@ npx ai-voice-bridge --help
 Test the Claude Code plugin before submitting to any marketplace:
 
 ```bash
-claude --plugin-dir /Users/maxhome/TOMORROWME-REPOS/voice-bridge/claude-plugin
+claude --plugin-dir claude-plugin
 ```
 
 Then in Claude Code:
