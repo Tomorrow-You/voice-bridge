@@ -1,6 +1,6 @@
 [project]
 name = "ai-voice-bridge"
-version = "0.1.2"
+version = "0.1.3"
 description = "Multi-engine TTS for AI coding assistants — speak responses aloud"
 readme = "README.md"
 license = "MIT"

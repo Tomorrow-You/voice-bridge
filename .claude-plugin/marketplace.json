@@ -9,7 +9,7 @@
     {
       "name": "voice-bridge",
       "description": "Give Claude Code a voice -- multi-engine TTS that speaks responses aloud. Free, local-first, 5 engines.",
-      "version": "0.1.1",
+      "version": "0.1.3",
       "category": "productivity",
       "source": "./claude-plugin",
       "homepage": "https://github.com/Tomorrow-You/voice-bridge",

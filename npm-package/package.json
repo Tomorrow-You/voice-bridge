@@ -1,6 +1,6 @@
 {
   "name": "ai-voice-bridge",
-  "version": "0.1.2",
+  "version": "0.1.3",
   "mcpName": "io.github.dwarmerdam/voice-bridge",
   "description": "MCP server for Voice Bridge — multi-engine TTS for AI coding assistants",
   "author": "Tomorrow You LLC",
