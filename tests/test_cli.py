@@ -51,3 +51,41 @@ def test_voices_kokoro():
     assert result.returncode == 0
     assert "Kokoro voices" in result.stdout
     assert "bm_lewis" in result.stdout
+
+
+def test_voices_kokoro_filter_gender():
+    """Test gender filtering for kokoro voices."""
+    result = subprocess.run(
+        [sys.executable, "-m", "voice_bridge.cli", "voices", "kokoro", "--gender", "Female"],
+        capture_output=True, text=True,
+    )
+    assert result.returncode == 0
+    assert "af_bella" in result.stdout
+    assert "bf_emma" in result.stdout
+    assert "am_adam" not in result.stdout
+    assert "bm_lewis" not in result.stdout
+
+
+def test_voices_edge_tts_filter_gender_locale():
+    """Test gender + locale filtering for edge-tts voices."""
+    result = subprocess.run(
+        [sys.executable, "-m", "voice_bridge.cli", "voices", "edge-tts",
+         "--gender", "Male", "--locale", "en-GB"],
+        capture_output=True, text=True,
+    )
+    assert result.returncode == 0
+    assert "en-GB-RyanNeural" in result.stdout
+    # Should not contain US voices
+    assert "en-US-GuyNeural" not in result.stdout
+
+
+def test_voices_single_preview_arg():
+    """Test that --preview with a voice name is accepted by argparse."""
+    result = subprocess.run(
+        [sys.executable, "-m", "voice_bridge.cli", "voices", "kokoro",
+         "--preview", "bm_lewis"],
+        capture_output=True, text=True,
+        timeout=15,
+    )
+    # Should attempt to preview (may fail if kokoro not installed, but shouldn't crash argparse)
+    assert result.returncode == 0 or "failed" in result.stdout

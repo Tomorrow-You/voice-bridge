@@ -11,8 +11,10 @@ Usage:
     voice-bridge speed [val]  # Set engine speed
     voice-bridge setup        # Interactive first-run setup
     voice-bridge engines      # List available engines
-    voice-bridge voices [engine]           # List available voices for an engine
-    voice-bridge voices [engine] --preview # Audition each voice with a sample phrase
+    voice-bridge voices [engine]                        # List available voices
+    voice-bridge voices edge-tts --preview en-US-GuyNeural  # Preview one voice
+    voice-bridge voices edge-tts --gender Female --preview  # Filter + interactive preview
+    voice-bridge voices edge-tts --sample 3 --preview       # Random sample of 3
 
 Modes:
     off      -- TTS only when user types "speak" keyword (single-turn)
@@ -36,7 +38,11 @@ def main():
         help="Command to run",
     )
     parser.add_argument("value", nargs="?", help="Value for voice/engine/speed commands")
-    parser.add_argument("--preview", action="store_true", help="Preview voices with a sample phrase (use with 'voices')")
+    parser.add_argument("--preview", nargs="?", const="__all__", default=None,
+                        metavar="VOICE", help="Preview voices: --preview (interactive) or --preview VOICE_NAME (one voice)")
+    parser.add_argument("--gender", help="Filter voices by gender (Male/Female)")
+    parser.add_argument("--locale", help="Filter voices by locale (e.g. en-US, en-GB)")
+    parser.add_argument("--sample", type=int, help="Preview N random voices")
     args = parser.parse_args()
 
     state = read_state()
@@ -255,16 +261,18 @@ def main():
                 print(f"Speed control not available for engine: {resolved}")
 
     elif args.command == "voices":
-        _list_voices(args.value, state, preview=args.preview)
+        _list_voices(args.value, state, preview=args.preview,
+                     gender=args.gender, locale=args.locale, sample=args.sample)
 
     elif args.command == "setup":
         from voice_bridge.setup_wizard import run_setup
         run_setup()
 
 
-def _list_voices(engine_arg: str | None, state: dict[str, str], preview: bool = False):
-    """List available voices for an engine."""
-    from voice_bridge.engines import resolve_engine_name, get_available_engines
+def _list_voices(engine_arg: str | None, state: dict[str, str],
+                  preview=None, gender=None, locale=None, sample=None):
+    """List available voices for an engine, with optional filtering and preview."""
+    from voice_bridge.engines import resolve_engine_name
 
     engine_name = engine_arg or state.get("VOICE_BRIDGE_ENGINE", "auto")
 
@@ -278,26 +286,34 @@ def _list_voices(engine_arg: str | None, state: dict[str, str], preview: bool = 
             print(f"Error: {e}", file=sys.stderr)
             sys.exit(1)
 
+    # Single voice preview: --preview VOICE_NAME
+    if preview and preview != "__all__":
+        _preview_single_voice(resolved, preview)
+        return
+
+    do_preview = preview == "__all__"
+
     if resolved == "edge-tts":
-        _list_edge_tts_voices(preview)
+        _list_edge_tts_voices(do_preview, gender, locale, sample)
     elif resolved == "elevenlabs":
-        _list_elevenlabs_voices(preview)
+        _list_elevenlabs_voices(do_preview, gender, sample)
     elif resolved == "kokoro":
-        _list_kokoro_voices(preview)
+        _list_kokoro_voices(do_preview, gender, sample)
     elif resolved == "say":
-        _list_say_voices(preview)
+        _list_say_voices(do_preview, locale, sample)
     elif resolved == "espeak":
-        _list_espeak_voices(preview)
+        _list_espeak_voices(do_preview)
     else:
         print(f"No voice listing for engine: {resolved}")
 
+
+# --- Preview helpers ---
 
 PREVIEW_PHRASE = "Hello, this is a preview of my voice."
 
 
 def _preview_voice(engine_name: str, voice_name: str):
     """Speak a sample phrase with a specific voice."""
-    from voice_bridge.engines import create_engine
     from voice_bridge.config import TTSConfig
     config = TTSConfig()
 
@@ -313,6 +329,7 @@ def _preview_voice(engine_name: str, voice_name: str):
             from voice_bridge.tts.kokoro_engine import KokoroTTS
             engine = KokoroTTS(voice=voice_name, speed=config.kokoro_speed)
         else:
+            from voice_bridge.engines import create_engine
             engine = create_engine(engine_name, config)
         engine.speak(PREVIEW_PHRASE)
         print(" done")
@@ -320,8 +337,93 @@ def _preview_voice(engine_name: str, voice_name: str):
         print(f" failed: {e}")
 
 
-def _list_edge_tts_voices(preview: bool = False):
-    """List edge-tts voices, English by default."""
+def _preview_single_voice(engine_name: str, voice_name: str):
+    """Preview a single voice by name and exit."""
+    _preview_voice(engine_name, voice_name)
+    print(f"\nSet with: voice-bridge voice {voice_name}")
+
+
+def _play_audio_file(path: str):
+    """Play an audio file using the platform audio player."""
+    import platform
+    import shutil
+    import subprocess
+
+    system = platform.system()
+    if system == "Darwin":
+        cmd = ["afplay", path]
+    elif system == "Linux":
+        if shutil.which("mpv"):
+            cmd = ["mpv", "--no-terminal", path]
+        elif shutil.which("ffplay"):
+            cmd = ["ffplay", "-nodisp", "-autoexit", "-loglevel", "quiet", path]
+        else:
+            return
+    elif system == "Windows":
+        if shutil.which("ffplay"):
+            cmd = ["ffplay", "-nodisp", "-autoexit", "-loglevel", "quiet", path]
+        elif shutil.which("mpv"):
+            cmd = ["mpv", "--no-terminal", path]
+        else:
+            return
+    else:
+        return
+
+    subprocess.run(cmd, stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
+
+
+def _interactive_preview(engine_name: str, voice_name: str) -> str:
+    """Preview a voice and prompt for action. Returns 'next', 'select', or 'quit'."""
+    _preview_voice(engine_name, voice_name)
+
+    if not sys.stdin.isatty():
+        return "next"
+
+    try:
+        choice = input("     [n]ext / [s]elect / [q]uit? ").strip().lower()
+    except EOFError:
+        return "quit"
+
+    if choice in ("s", "select"):
+        return "select"
+    elif choice in ("q", "quit"):
+        return "quit"
+    return "next"
+
+
+def _apply_sample(voices: list, sample: int | None) -> list:
+    """Randomly sample N voices from a list."""
+    if sample and sample < len(voices):
+        import random
+        return random.sample(voices, sample)
+    return voices
+
+
+def _preview_loop(engine_name: str, voices: list[tuple[str, str]], sample: int | None):
+    """Run interactive preview over a list of (voice_name, display_label) tuples."""
+    if not sys.stdin.isatty():
+        print("\nPreview requires an interactive terminal.")
+        return
+
+    voices = _apply_sample(voices, sample)
+    print(f"\nPreviewing {len(voices)} voice(s). Press Ctrl+C to cancel.\n")
+
+    try:
+        for voice_name, _ in voices:
+            action = _interactive_preview(engine_name, voice_name)
+            if action == "select":
+                print(f"\n  Run: voice-bridge voice {voice_name}")
+                return
+            elif action == "quit":
+                return
+    except KeyboardInterrupt:
+        print("\nPreview cancelled.")
+
+
+# --- Engine-specific voice listing ---
+
+def _list_edge_tts_voices(preview: bool = False, gender=None, locale=None, sample=None):
+    """List edge-tts voices with optional filtering and preview."""
     try:
         import asyncio
         import edge_tts
@@ -331,18 +433,35 @@ def _list_edge_tts_voices(preview: bool = False):
 
     voices = asyncio.run(edge_tts.list_voices())
     en_voices = [v for v in voices if v["Locale"].startswith("en-")]
+
+    # Apply filters
+    if gender:
+        en_voices = [v for v in en_voices if v["Gender"].lower() == gender.lower()]
+    if locale:
+        en_voices = [v for v in en_voices if v["Locale"].lower() == locale.lower()]
+
     en_voices.sort(key=lambda v: v["ShortName"])
 
-    print(f"edge-tts English voices ({len(en_voices)} of {len(voices)} total):\n")
+    total = len(asyncio.run(edge_tts.list_voices()))
+    filters = []
+    if gender:
+        filters.append(gender)
+    if locale:
+        filters.append(locale)
+    filter_desc = f" ({', '.join(filters)})" if filters else " English"
+
+    print(f"edge-tts{filter_desc} voices ({len(en_voices)} of {total} total):\n")
     for v in en_voices:
         print(f"  {v['ShortName']:40s} {v['Gender']}")
-        if preview:
-            _preview_voice("edge-tts", v["ShortName"])
     print(f"\nSet with: voice-bridge voice <name>")
 
+    if preview:
+        voice_pairs = [(v["ShortName"], v["ShortName"]) for v in en_voices]
+        _preview_loop("edge-tts", voice_pairs, sample)
 
-def _list_elevenlabs_voices(preview: bool = False):
-    """List ElevenLabs voices via API."""
+
+def _list_elevenlabs_voices(preview: bool = False, gender=None, sample=None):
+    """List ElevenLabs voices via API with optional preview using preview_url."""
     try:
         from elevenlabs import ElevenLabs
     except ImportError:
@@ -358,16 +477,76 @@ def _list_elevenlabs_voices(preview: bool = False):
 
     client = ElevenLabs(api_key=api_key)
     response = client.voices.get_all()
+    voices = list(response.voices)
 
-    print(f"ElevenLabs voices ({len(response.voices)}):\n")
-    for v in response.voices:
+    if gender:
+        voices = [v for v in voices
+                  if hasattr(v, 'labels') and v.labels
+                  and v.labels.get('gender', '').lower() == gender.lower()]
+
+    print(f"ElevenLabs voices ({len(voices)}):\n")
+    for v in voices:
         print(f"  {v.name:30s} ID: {v.voice_id}")
-        if preview:
-            _preview_voice("elevenlabs", v.voice_id)
     print(f"\nSet with: voice-bridge voice <voice_id>")
 
+    if preview:
+        # Use preview_url if available (free, no API credits)
+        if not sys.stdin.isatty():
+            print("\nPreview requires an interactive terminal.")
+            return
 
-def _list_kokoro_voices(preview: bool = False):
+        voice_pairs = [(v.voice_id, v.name) for v in voices]
+        voice_pairs = _apply_sample(voice_pairs, sample)
+        voice_map = {v.voice_id: v for v in voices}
+
+        print(f"\nPreviewing {len(voice_pairs)} voice(s). Press Ctrl+C to cancel.\n")
+        try:
+            for voice_id, display in voice_pairs:
+                v = voice_map[voice_id]
+                preview_url = getattr(v, 'preview_url', None)
+                if preview_url:
+                    _preview_elevenlabs_url(v.name, preview_url)
+                else:
+                    _preview_voice("elevenlabs", voice_id)
+
+                if not sys.stdin.isatty():
+                    continue
+                try:
+                    choice = input("     [n]ext / [s]elect / [q]uit? ").strip().lower()
+                except EOFError:
+                    break
+                if choice in ("s", "select"):
+                    print(f"\n  Run: voice-bridge voice {voice_id}")
+                    return
+                elif choice in ("q", "quit"):
+                    return
+        except KeyboardInterrupt:
+            print("\nPreview cancelled.")
+
+
+def _preview_elevenlabs_url(name: str, url: str):
+    """Play an ElevenLabs voice preview from its pre-recorded sample URL."""
+    import os
+    import tempfile
+    import urllib.request
+
+    print(f"  >> Previewing {name}...", end="", flush=True)
+    try:
+        tmp_fd, tmp_path = tempfile.mkstemp(suffix=".mp3")
+        os.close(tmp_fd)
+        urllib.request.urlretrieve(url, tmp_path)
+        _play_audio_file(tmp_path)
+        print(" done")
+    except Exception as e:
+        print(f" failed: {e}")
+    finally:
+        try:
+            os.unlink(tmp_path)
+        except OSError:
+            pass
+
+
+def _list_kokoro_voices(preview: bool = False, gender=None, sample=None):
     """List bundled Kokoro voice names."""
     voices = [
         ("af_bella", "American Female"),
@@ -381,15 +560,21 @@ def _list_kokoro_voices(preview: bool = False):
         ("bm_george", "British Male"),
         ("bm_lewis", "British Male"),
     ]
+
+    if gender:
+        g = gender.lower()
+        voices = [(n, d) for n, d in voices if g in d.lower()]
+
     print("Kokoro voices:\n")
     for name, desc in voices:
         print(f"  {name:20s} {desc}")
-        if preview:
-            _preview_voice("kokoro", name)
     print(f"\nSet with: voice-bridge voice <name>")
 
+    if preview:
+        _preview_loop("kokoro", voices, sample)
 
-def _list_say_voices(preview: bool = False):
+
+def _list_say_voices(preview: bool = False, locale=None, sample=None):
     """List macOS say voices."""
     import subprocess
     try:
@@ -403,15 +588,24 @@ def _list_say_voices(preview: bool = False):
     all_voices = result.stdout.strip().splitlines()
     en_voices = [v for v in all_voices if "en_" in v or "en-" in v]
 
-    print(f"macOS say English voices ({len(en_voices)} of {len(all_voices)} total):\n")
+    if locale:
+        # Normalize locale format: en-US -> en_US for matching
+        loc = locale.replace("-", "_")
+        en_voices = [v for v in en_voices if loc in v]
+
+    parsed = []
     for v in en_voices:
-        # Format: "Name  lang  # description"
         name = v.split()[0]
         rest = v[len(name):].strip()
+        parsed.append((name, rest))
+
+    print(f"macOS say English voices ({len(parsed)} of {len(all_voices)} total):\n")
+    for name, rest in parsed:
         print(f"  {name:20s} {rest}")
-        if preview:
-            _preview_voice("say", name)
     print(f"\nSet with: voice-bridge voice <name>")
+
+    if preview:
+        _preview_loop("say", parsed, sample)
 
 
 def _list_espeak_voices(preview: bool = False):
@@ -431,9 +625,11 @@ def _list_espeak_voices(preview: bool = False):
     print("espeak English voices:\n")
     for line in result.stdout.strip().splitlines():
         print(f"  {line.strip()}")
+
     if preview:
         print()
         _preview_voice("espeak", "")
+        print(f"\nSet with: voice-bridge voice <name>")
 
 
 if __name__ == "__main__":
