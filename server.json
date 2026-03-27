@@ -2,7 +2,7 @@
   "$schema": "https://static.modelcontextprotocol.io/schemas/2025-12-11/server.schema.json",
   "name": "io.github.dwarmerdam/voice-bridge",
   "title": "Voice Bridge",
-  "description": "Multi-engine TTS for AI coding assistants. Free, 5 engines, no API key needed.",
+  "description": "Multi-engine TTS for AI coding assistants. 5 engines, free engine included.",
   "repository": {
     "url": "https://github.com/Tomorrow-You/voice-bridge",
     "source": "github",
