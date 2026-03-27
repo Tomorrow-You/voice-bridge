@@ -2,6 +2,8 @@
 import subprocess
 import sys
 
+import pytest
+
 
 def test_voice_bridge_help():
     result = subprocess.run(
@@ -68,6 +70,11 @@ def test_voices_kokoro_filter_gender():
 
 def test_voices_edge_tts_filter_gender_locale():
     """Test gender + locale filtering for edge-tts voices."""
+    try:
+        import edge_tts  # noqa: F401
+    except ImportError:
+        pytest.skip("edge-tts not installed")
+
     result = subprocess.run(
         [sys.executable, "-m", "voice_bridge.cli", "voices", "edge-tts",
          "--gender", "Male", "--locale", "en-GB"],
